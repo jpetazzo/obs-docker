@@ -1,0 +1,25 @@
+version: "2"
+
+services:
+
+  eos1100d:
+    privileged: true
+    image: nixery.dev/shell/ffmpeg/gphoto2
+    command:
+    - sh
+    - -c
+    - |
+      gphoto2 --stdout --capture-movie \
+      | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video8
+
+  tuning:
+    privileged: true
+    image: nixery.dev/shell/v4l-utils
+    command:
+    - sh
+    - -c
+    - |
+      v4l2-ctl --device /dev/video0 -c power_line_frequency=1
+      v4l2-ctl --device /dev/video2 -c power_line_frequency=1
+      v4l2-ctl --device /dev/video2 -c focus_auto=1
+
