@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import json
+import websocket
+import sys
+
+from obswebsocket import obsws, requests  # noqa: E402
+
+host = "localhost"
+port = 4444
+
+# Manual connection
+# (there seems to be an issue with password auth;
+# this might be specific to OBS 24 since it worked
+# fine on OBS 25 on Arch)
+ws = obsws(host, port)
+ws.ws = websocket.WebSocket()
+ws.ws.connect("ws://{}:{}".format(host, port))
+ws._run_threads()
+
+def call(func, *params):
+    req = ws.call(getattr(requests, func)(*params))
+    return req.datain
+
+if len(sys.argv) == 1:
+    print("""
+You need to specify at least a function call.")
+
+Examples:
+    GetSceneList
+    SetCurrentScene <name>
+""")
+    exit()
+
+ret = call(sys.argv[1], *sys.argv[2:])
+print(json.dumps(ret))
+
