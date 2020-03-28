@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 
 services:
 
@@ -22,4 +22,53 @@ services:
       v4l2-ctl --device /dev/video0 -c power_line_frequency=1
       v4l2-ctl --device /dev/video2 -c power_line_frequency=1
       v4l2-ctl --device /dev/video2 -c focus_auto=1
+
+  v4l2loopback:
+    privileged: true
+    image: alpine
+    command: modprobe v4l2loopback video_nr=8,9 card_label=EOS1100D,OBS
+    volumes:
+    - /lib/modules:/lib/modules
+
+  obs:
+    privileged: true
+    build:
+      context: obs-studio
+      dockerfile: Dockerfile.debian
+    environment:
+    - DISPLAY
+    - HOME
+    - USER
+    volumes:
+    - /tmp/.X11-unix/:/tmp/.X11-unix/
+    - $HOME/.config/obs-studio:$HOME/.config/obs-studio
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/shadow:/etc/shadow:ro
+    - /etc/group:/etc/group:ro
+    command:
+    - sh
+    - -c
+    - |
+      chown ${UID:?please 'export UID'} $HOME/.config/obs-studio
+      su -G video $USER sh -c obs
+
+  streamdeck:
+    privileged: true
+    build: streamdeck
+    environment:
+    - DISPLAY
+    - HOME
+    - USER
+    volumes:
+    - /tmp/.X11-unix/:/tmp/.X11-unix/
+    - $HOME/.config/streamdeck_ui:$HOME
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/shadow:/etc/shadow:ro
+    - /etc/group:/etc/group:ro
+    command:
+    - sh
+    - -c
+    - |
+      chown ${UID:?please 'export UID'} $HOME
+      su -G plugdev $USER sh -c streamdeck
 
