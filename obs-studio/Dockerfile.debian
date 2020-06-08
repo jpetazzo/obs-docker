@@ -1,7 +1,22 @@
 FROM debian:bullseye
 RUN apt-get update
 #RUN apt-get install -y keyboard-configuration tzdata </dev/null # lol
-RUN apt-get install -y build-essential cmake git libboost-dev libobs-dev obs-studio qtbase5-dev
+
+# Option 1: use distro packages
+RUN apt-get install -y libobs-dev obs-studio
+
+# Option 2: use upstream packages (supposedly built with NVENC support?)
+#RUN apt-get install -y gnupg
+#RUN echo deb http://ppa.launchpad.net/obsproject/obs-studio/ubuntu focal main > /etc/apt/sources.list.d/obs.list
+#RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BC7345F522079769F5BBE987EFC71127F425E228
+#RUN apt-get update
+#RUN apt-get remove -y libgcc1
+#RUN apt-get install -y ffmpeg
+#RUN apt-get install -y obs-studio
+
+# Install packages to build plugins
+RUN apt-get install -y build-essential cmake git libboost-dev qtbase5-dev
+
 WORKDIR /src
 RUN git clone --recursive https://github.com/obsproject/obs-studio.git
 
@@ -17,7 +32,7 @@ RUN git clone --recursive https://github.com/Palakis/obs-websocket.git
 # Hackish!
 RUN ln -s /src/obs-studio/UI/obs-frontend-api/obs-frontend-api.h /usr/include/obs/
 WORKDIR obs-websocket
-RUN git checkout 5.x
+#RUN git checkout 5.x
 WORKDIR build
 RUN cmake -DLIBOBS_INCLUDE_DIR="../../obs-studio/libobs" -DCMAKE_INSTALL_PREFIX=/usr ..
 RUN make -j4
@@ -25,3 +40,14 @@ RUN make install
 WORKDIR /src
 
 RUN cp /usr/lib/obs-plugins/*.so /usr/lib/x86_64-linux-gnu/obs-plugins
+
+# Hack: add NVidia support
+RUN echo deb http://ftp.de.debian.org/debian/ buster main contrib non-free >> /etc/apt/sources.list.d/buster.list
+RUN echo deb http://ftp.de.debian.org/debian/ buster-backports main contrib non-free >> /etc/apt/sources.list.d/buster.list
+RUN apt-get update
+RUN apt-get install -y nvidia-driver-libs -t buster-backports
+
+# Test: add noto fonts
+#RUN apt-get install -y fonts-noto
+
+RUN apt-get install -y mesa-utils strace

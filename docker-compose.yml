@@ -33,12 +33,20 @@ services:
     volumes:
     - /lib/modules:/lib/modules
 
+  alsaloopback:
+    privileged: true
+    image: alpine
+    command: modprobe snd-aloop index=9 id=Loopback pcm_substreams=1
+    volumes:
+    - /lib/modules:/lib/modules
+
   obs:
     privileged: true
     network_mode: "service:networksandbox"
+    ipc: host
     build:
       context: obs-studio
-      dockerfile: Dockerfile.debian
+      dockerfile: Dockerfile.ubuntu
     environment:
     - DISPLAY
     - HOME
@@ -49,12 +57,23 @@ services:
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
     - /etc/group:/etc/group:ro
+    - $HOME/Downloads:$HOME/Downloads
+    - /run/user/$UID/pulse/:/var/run/pulse/
+    - ./countdowns/:/countdowns/
+    - /usr/lib/x86_64-linux-gnu/:/local-libraries/:ro
     command:
     - sh
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME/.config/obs-studio
-      su -G video $USER sh -c obs
+      xset -dpms
+      xset s off
+      if [ -d /local-libraries ]; then
+        cp -a /local-libraries/libnv* /usr/lib/x86_64-linux-gnu/
+        cp -a /local-libraries/nvidia/current/* /usr/lib/x86_64-linux-gnu/
+      fi
+      su $USER sh -c obs
+      #su -G video $USER sh -c obs
 
   streamdeck:
     privileged: true
@@ -71,10 +90,27 @@ services:
     - /etc/shadow:/etc/shadow:ro
     - /etc/group:/etc/group:ro
     - ./streamdeck/bin/:/src/bin/
+    - ./countdowns/:/countdowns/
     command:
     - sh
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME
-      su -G plugdev $USER sh -c streamdeck
+      su -G plugdev -G video $USER sh -c streamdeck
+
+  countdown:
+    image: python:3
+    volumes:
+    - ./streamdeck/bin:/usr/local/bin
+    - ./countdowns/:/countdowns/
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/shadow:/etc/shadow:ro
+    working_dir: /countdowns
+    command:
+    - sh
+    - -c
+    - |
+      su $USER sh -c "countdown _"
+
+
 
