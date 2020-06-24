@@ -1,0 +1,4 @@
+#!/bin/sh
+for DEV in /dev/video*; do
+  v4l2-ctl --device $DEV -c focus_auto=1
+done

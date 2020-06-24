@@ -59,7 +59,7 @@ services:
     - /etc/group:/etc/group:ro
     - $HOME/Downloads:$HOME/Downloads
     - /run/user/$UID/pulse/:/var/run/pulse/
-    - ./countdowns/:/countdowns/
+    - ./data/:/data/
     - /usr/lib/x86_64-linux-gnu/:/local-libraries/:ro
     command:
     - sh
@@ -83,34 +83,34 @@ services:
     - DISPLAY
     - HOME
     - USER
+    - PATH=/scripts:/usr/local/bin:/usr/bin:/bin
     volumes:
     - /tmp/.X11-unix/:/tmp/.X11-unix/
     - $HOME/.config/streamdeck_ui:$HOME
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
     - /etc/group:/etc/group:ro
-    - ./streamdeck/bin/:/src/bin/
-    - ./countdowns/:/countdowns/
+    - ./bin/:/scripts/:ro
+    - ./data/:/data/
+    working_dir: /data
     command:
     - sh
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME
-      su -G plugdev -G video $USER sh -c streamdeck
+      su -G plugdev -G input -G video $USER sh -c streamdeck
 
   countdown:
     image: python:3
     volumes:
-    - ./streamdeck/bin:/usr/local/bin
-    - ./countdowns/:/countdowns/
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
-    working_dir: /countdowns
+    - ./bin:/usr/local/bin
+    - ./data/:/data/
+    working_dir: /data
     command:
     - sh
     - -c
     - |
       su $USER sh -c "countdown _"
-
-
 

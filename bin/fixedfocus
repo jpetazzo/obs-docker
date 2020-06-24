@@ -1,0 +1,24 @@
+#!/bin/sh
+cd /sys/class/video4linux
+for DEV in *; do
+  # Only work with device index=0
+  # (the other indexes are typically metadata devices,
+  # we don't care about them)
+  grep -q ^0$ $DEV/index || continue
+  NAME=$(cat $DEV/name)
+  case $NAME in
+    "HD Pro Webcam C920")
+      echo "Setting fixed focus for $NAME on /dev/$DEV."
+      v4l2-ctl --device /dev/$DEV -c focus_auto=0
+      v4l2-ctl --device /dev/$DEV -c focus_absolute=30
+      ;;
+    "Logitech StreamCam")
+      echo "Setting fixed focus for $NAME on /dev/$DEV."
+      v4l2-ctl --device /dev/$DEV -c focus_auto=0
+      v4l2-ctl --device /dev/$DEV -c focus_absolute=20
+      ;;
+    *)
+      echo "Skipping unknown camera $NAME on /dev/$DEV."
+      ;;
+  esac
+done
