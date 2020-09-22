@@ -66,14 +66,17 @@ services:
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME/.config/obs-studio
+      chown ${UID:?please 'export UID'} $HOME
       xset -dpms
       xset s off
       if [ -d /local-libraries ]; then
         cp -a /local-libraries/libnv* /usr/lib/x86_64-linux-gnu/
         cp -a /local-libraries/nvidia/current/* /usr/lib/x86_64-linux-gnu/
       fi
-      su $USER sh -c obs
-      #su -G video $USER sh -c obs
+      mkdir -p $HOME/.config/obs-studio/plugins
+      [ -d $HOME/.config/obs-studio/plugins/obs-linuxbrowser ] ||
+        ln -sf /src/obs-linuxbrowser $HOME/.config/obs-studio/plugins/obs-linuxbrowser
+      exec su $USER sh -c "exec obs"
 
   streamdeck:
     privileged: true
@@ -98,7 +101,7 @@ services:
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME
-      su -G plugdev -G input -G video $USER sh -c streamdeck
+      exec su -G plugdev -G input -G video $USER sh -c "exec streamdeck"
 
   countdown:
     image: python:3
@@ -112,5 +115,5 @@ services:
     - sh
     - -c
     - |
-      su $USER sh -c "countdown _"
+      exec su $USER sh -c "exec countdown _"
 
