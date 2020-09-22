@@ -1,7 +1,7 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 RUN apt-get update
 RUN apt-get install -y keyboard-configuration tzdata </dev/null # lol
-RUN apt-get install -y build-essential cmake ffmpeg git libboost-dev mesa-utils qtbase5-dev strace x11-xserver-utils
+RUN apt-get install -y build-essential cmake curl ffmpeg git libboost-dev libnss3 mesa-utils qtbase5-dev strace x11-xserver-utils
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:obsproject/obs-studio
 RUN apt-get install -y obs-studio
@@ -28,3 +28,8 @@ RUN make install
 WORKDIR /src
 
 RUN cp /usr/lib/x86_64-linux-gnu/obs-plugins/*.so /usr/lib/obs-plugins
+
+# Note 1: this depends on libnss3 (installed with APT earlier).
+# Note 2: this is not enough to install the plugin. A symlink must
+#         be created in $HOME/.config/obs-studio/plugins as well.
+RUN curl -sL https://github.com/bazukas/obs-linuxbrowser/releases/download/0.6.1/linuxbrowser0.6.1-obs23.0.2-64bit.tgz | tar -zxf-
