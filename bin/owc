@@ -19,20 +19,46 @@ ws.ws = websocket.WebSocket()
 ws.ws.connect("ws://{}:{}".format(host, port))
 ws._run_threads()
 
-def call(func, *params):
-    req = ws.call(getattr(requests, func)(*params))
+def call(func, *args, **kwargs):
+    req = ws.call(getattr(requests, func)(*args, **kwargs))
     return req.datain
 
 if len(sys.argv) == 1:
     print("""
-You need to specify at least a function call.")
+You need to specify at least a function call.
 
 Examples:
     GetSceneList
     SetCurrentScene <name>
+
+You can also specify '?' to show available functions, or ?Scene to show
+all functions containing Scene.
+
+If an argument contains = it will be passed as a kwarg, and the right
+hand side should be JSON.
 """)
     exit()
 
-ret = call(sys.argv[1], *sys.argv[2:])
+if sys.argv[1].startswith('?'):
+    search = sys.argv[1][1:]
+    for func in dir(requests):
+        if func[0] == '_':
+            continue
+        if search in func:
+            print(func)
+    exit()
+
+args = []
+kwargs = {}
+
+for a in sys.argv[2:]:
+    if '=' in a:
+        k, v = a.split('=', 1)
+        v = json.loads(v)
+        kwargs[k] = v
+    else:
+        args.append(a)
+
+ret = call(sys.argv[1], *args, **kwargs)
 print(json.dumps(ret))
 

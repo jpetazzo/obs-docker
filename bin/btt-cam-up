@@ -1,0 +1,8 @@
+#!/bin/sh
+
+owc SetSceneItemProperties cam-up visible=true
+owc SetSceneItemProperties cam-down visible=false
+
+owc SetSceneItemProperties bg-up visible=true
+owc SetSceneItemProperties bg-both visible=false
+owc SetSceneItemProperties bg-down visible=false

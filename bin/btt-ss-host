@@ -1,0 +1,4 @@
+#!/bin/sh
+
+owc SetSceneItemProperties Host-screenshare visible=true
+owc SetSceneItemProperties Guest-screenshare visible=false
