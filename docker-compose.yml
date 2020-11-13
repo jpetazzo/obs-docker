@@ -54,6 +54,7 @@ services:
     volumes:
     - /tmp/.X11-unix/:/tmp/.X11-unix/
     - $HOME/.config/obs-studio:$HOME/.config/obs-studio
+    - $HOME/.fonts/:$HOME/.fonts/
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
     - /etc/group:/etc/group:ro
@@ -95,6 +96,7 @@ services:
     - /etc/group:/etc/group:ro
     - ./bin/:/scripts/:ro
     - ./data/:/data/
+    - /home/jp/recordings/:/recordings/:ro
     working_dir: /data
     command:
     - sh

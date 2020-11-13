@@ -18,7 +18,7 @@ WORKDIR /src
 
 RUN git clone --recursive https://github.com/Palakis/obs-websocket.git
 # The following line seems necessary because that header otherwise can't be found (hackish?)
-RUN ln -s /src/obs-studio/UI/obs-frontend-api/obs-frontend-api.h /usr/include/obs/
+# RUN ln -s /src/obs-studio/UI/obs-frontend-api/obs-frontend-api.h /usr/include/obs/
 WORKDIR obs-websocket
 #RUN git checkout 5.x
 WORKDIR build
