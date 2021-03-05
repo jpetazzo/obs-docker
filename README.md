@@ -67,10 +67,25 @@ Things that don't work or could be better ...
 ## How to use this
 
 1. Install or compile v4l2loopback kernel module (perhaps via v4l2loopback-dkms).
-2. Install udev rules for Stream Deck (check the [streamdeck_ui page]
+2. Install udev rules for Stream Deck (check the [streamdeck_ui] page
    for details).
 3. `docker-compose up`.
    (It will tells you to export an environment variable, do it and try again.)
+
+The Compose file relies on the `$UID` environment variable.
+The variable exists in most shells, but is not exported.
+So if you see a message about `$UID` not being exported,
+just `export UID` and try again.
+
+If you don't want to run `export UID` each time you
+use this, you can also do the following:
+
+```bash
+echo UID=$UID > .env
+```
+
+(The `.env` file is automatically added to the environment
+by Compose.)
 
 
 ## Details
