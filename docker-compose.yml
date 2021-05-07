@@ -13,23 +13,12 @@ services:
     - -c
     - |
       gphoto2 --stdout --capture-movie \
-      | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video8
-
-  tuning:
-    privileged: true
-    image: nixery.dev/shell/v4l-utils
-    command:
-    - sh
-    - -c
-    - |
-      v4l2-ctl --device /dev/video0 -c power_line_frequency=1
-      v4l2-ctl --device /dev/video2 -c power_line_frequency=1
-      v4l2-ctl --device /dev/video2 -c focus_auto=1
+      | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video9
 
   v4l2loopback:
     privileged: true
     image: alpine
-    command: modprobe v4l2loopback video_nr=8,9 card_label=EOS1100D,OBS
+    command: modprobe v4l2loopback video_nr=8,9 card_label=OBS,EOS1100D
     volumes:
     - /lib/modules:/lib/modules
 
@@ -46,22 +35,25 @@ services:
     ipc: host
     build:
       context: obs-studio
-      dockerfile: Dockerfile.ubuntu
+      dockerfile: Dockerfile.${OBS_IMAGE_DISTRO-ubuntu}
     environment:
     - DISPLAY
     - HOME
     - USER
+    - XAUTHORITY
     volumes:
     - /tmp/.X11-unix/:/tmp/.X11-unix/
     - $HOME/.config/obs-studio:$HOME/.config/obs-studio
     - $HOME/.fonts/:$HOME/.fonts/
+    - $XAUTHORITY:$XAUTHORITY:ro
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
     - /etc/group:/etc/group:ro
-    - $HOME/Downloads:$HOME/Downloads
     - /run/user/$UID/pulse/:/var/run/pulse/
     - ./data/:/data/
     - /usr/lib/x86_64-linux-gnu/:/local-libraries/:ro
+    # Directory containing e.g. images, videos, etc. used in OBS scenes
+    #- $HOME/Documents/streaming-assets:$HOME/Documents/streaming-assets
     command:
     - sh
     - -c
@@ -103,7 +95,7 @@ services:
     - -c
     - |
       chown ${UID:?please 'export UID'} $HOME
-      exec su -G plugdev -G input -G video $USER sh -c "exec streamdeck"
+      exec su -G input -G video $USER sh -c "exec streamdeck"
 
   countdown:
     image: python:3
